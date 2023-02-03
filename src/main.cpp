@@ -167,14 +167,17 @@ void upload_clock_hmi(){
 sendInt(Serial_hmi,"rtc3",hour.toInt());
 sendInt(Serial_hmi,"rtc4",minutes.toInt());
 sendInt(Serial_hmi,"rtc5",seconds.toInt());
+sendInt(Serial,"rtc3",hour.toInt());
+sendInt(Serial,"rtc4",minutes.toInt());
+sendInt(Serial,"rtc5",seconds.toInt());
 //hour.toInt();
 //minutes.toInt();
 //seconds.toInt();
- Serial.println(time);
+ //Serial.println(time);
  //Serial.println(date);
  //Serial.println(ntp.timeString());
  //Serial.println(ntp.dateString());
- //Serial.println();
+ Serial.println();
 
 
 }
