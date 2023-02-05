@@ -15,7 +15,7 @@
 ////////////////////
 #include <stdint.h>
 #include "WiFiScan.h"
-HardwareSerial Serial_hmi(2); 
+#define Serial_hmi Serial2
 #include "hmi_mini.h" 
 
 
@@ -48,7 +48,7 @@ String password;
 char buff[64];
 int intssid; 
 
-void ntp_status(){
+void ntp_status(HardwareSerial Serial){
 int stat = ntp.status();
    switch(stat){     
        case 0:  Serial.println("всё ок");                               break;
@@ -104,7 +104,7 @@ void serialEventRun () {
 }  
 
 void read_buf_serial_hmi(){
-    //for(int i = 0;i<bytesArraySerial2;i++){Serial.write(sBufSerial2[i]);}
+    for(int i = 0;i<bytesArraySerial_hmi;i++){Serial.write(sBufSerial_hmi[i]);}
     if(boolean_password){for(int i =1,j=0;i<bytesArraySerial_hmi-3;i++,j++){buff[j]= sBufSerial_hmi[i];}password = String(buff);boolean_password = false;password_ok=true;}
     if(boolean_ssid){ssid = WiFi.SSID(sBufSerial_hmi[1]);boolean_ssid = false;ssid_ok=true;intssid=sBufSerial_hmi[1];}
     if((sBufSerial_hmi[1]==0x00)&&(sBufSerial_hmi[2]==0x01)&&(sBufSerial_hmi[3]==0x01)){sendString(Serial2,"t0.txt","Idite naxuy.. ya vas ne znayu!!");}
@@ -113,7 +113,7 @@ void read_buf_serial_hmi(){
     else if((sBufSerial_hmi[1]==0x02)&&(sBufSerial_hmi[2]==0x01)&&(sBufSerial_hmi[3]==0x00)){boolean_xz = false;}//exit
     else if((sBufSerial_hmi[1]==0x04)&&(sBufSerial_hmi[2]==0x06)&&(sBufSerial_hmi[3]==0x01)){boolean_password = true;}//exit
     else if((sBufSerial_hmi[1]==0x04)&&(sBufSerial_hmi[2]==0x06)&&(sBufSerial_hmi[3]==0x00)){boolean_ssid = true;}//
-    else if((sBufSerial_hmi[1]==0x01)&&(sBufSerial_hmi[2]==0x16)&&(sBufSerial_hmi[3]==0x01)){upload_clock_hmi();}//
+    else if((sBufSerial_hmi[1]==0x01)&&(sBufSerial_hmi[2]==0x0f)&&(sBufSerial_hmi[3]==0x01)){upload_clock_hmi();}//
     else if((sBufSerial_hmi[1]==0x05)&&(sBufSerial_hmi[2]==0x0C)&&(sBufSerial_hmi[3]==0x00)){WiFi.disconnect();sendComand(Serial2,"page page0");sendString(Serial2,"wifiConnect.txt", "wifi not connected");sendInt(Serial2,"va10.val",0);sendInt(Serial2,"tm2.en",1);}//exit
     else if((sBufSerial_hmi[1]==0x05)&&(sBufSerial_hmi[2]==0x00)&&(sBufSerial_hmi[3]==0x01)){
        //char localip = WiFi.localIP();
@@ -158,25 +158,18 @@ void vTaskNTPsunc( void * pvParameters )
 
 void upload_clock_hmi(){
  ntp.updateNow(); 
- ntp_status();
+ ntp_status(Serial);
  String time = ntp.timeString();
  String date = ntp.dateString();
  int hour = time.substring(0,2).toInt() ;
  int minutes = time.substring(3,5).toInt() ;
  int seconds = time.substring(6,8).toInt() ;
-//sendInt(Serial_hmi,"tm0.en",0);
-sendInt(Serial_hmi,"rtc3",16);
-sendInt(Serial_hmi,"rtc4",50);
-sendInt(Serial_hmi,"rtc5",36);
-sendInt(Serial,"rtc3",hour);
-sendInt(Serial,"rtc4",minutes);
-sendInt(Serial,"rtc5",seconds);
-//sendInt(Serial_hmi,"tm0.en",1);
+sendInt(Serial_hmi,"rtc3",hour);
+sendInt(Serial_hmi,"rtc4",minutes);
+sendInt(Serial_hmi,"rtc5",seconds);
  //Serial.println(time);
  //Serial.println(date);
- //Serial.println(ntp.timeString());
- //Serial.println(ntp.dateString());
- Serial.println();
+ //Serial.println();
 
 
 }
