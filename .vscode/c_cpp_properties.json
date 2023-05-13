@@ -8,10 +8,11 @@
         {
             "name": "PlatformIO",
             "includePath": [
-                "c:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/include",
-                "c:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/src",
+                "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/include",
+                "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/src",
+                "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/.pio/libdeps/esp32dev/nahs-Bricks-Lib-HDC1080",
                 "C:/Users/des808/.platformio/packages/framework-espidf/components/esp_ringbuf/include",
-                "C:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/.pio/build/esp32dev/config",
+                "C:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/.pio/build/esp32dev/config",
                 "C:/Users/des808/.platformio/packages/framework-espidf/components/newlib/platform_include",
                 "C:/Users/des808/.platformio/packages/framework-espidf/components/freertos/include",
                 "C:/Users/des808/.platformio/packages/framework-espidf/components/freertos/include/esp_additions/freertos",
@@ -159,10 +160,11 @@
             "browse": {
                 "limitSymbolsToIncludedHeaders": true,
                 "path": [
-                    "c:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/include",
-                    "c:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/src",
+                    "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/include",
+                    "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/src",
+                    "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/.pio/libdeps/esp32dev/nahs-Bricks-Lib-HDC1080",
                     "C:/Users/des808/.platformio/packages/framework-espidf/components/esp_ringbuf/include",
-                    "C:/Users/des808/Documents/PlatformIO/Projects/230113-213040-espidf-arduino-wifiscan/.pio/build/esp32dev/config",
+                    "C:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/.pio/build/esp32dev/config",
                     "C:/Users/des808/.platformio/packages/framework-espidf/components/newlib/platform_include",
                     "C:/Users/des808/.platformio/packages/framework-espidf/components/freertos/include",
                     "C:/Users/des808/.platformio/packages/framework-espidf/components/freertos/include/esp_additions/freertos",
