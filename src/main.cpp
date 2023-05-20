@@ -296,8 +296,6 @@ void setup() {
 
 void loop() {
 //char xz[] = getFirst( wifi_struct);
-
-
     if(boolean_xz==true){boolean_xz=false; wifiScan();}
     if(read_buf_serial_hmi_bool){read_buf_serial_hmi();read_buf_serial_hmi_bool = false;}
     if(ssid_ok&&password_ok){
