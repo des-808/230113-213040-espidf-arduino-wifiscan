@@ -37,7 +37,6 @@ Ticker onceTicker;
 #define DELAY_24hours 8640000
 NTP ntp(3);
 String incStr;
-String intToString(int tmp,int sistema_shislenyya);
 void wifiScan();
 void wifi_auto_connect();
 void ntp_status();
@@ -46,6 +45,14 @@ void hdc1080_read_to_send_serial();
 void hdc1080_read_to_send_HMI();
 void send_termo_out_to_hmi(String byte_arr,String batery,int ch,int temp,int humiditu);
 void restart_attachInterrupt();
+
+//extern unsigned long timings[RING_BUFFER_SIZE];
+extern unsigned int syncIndex1;  // индекс первого синхросигнала
+extern unsigned int syncIndex2;  // индекс второго синхросигнала
+extern bool received;
+extern int counts;
+extern bool is_rf_post;
+extern int bufer[];
 
 bool ssid_ok=false;
 bool password_ok=false;
@@ -281,13 +288,13 @@ void setup() {
     //xTaskCreatePinnedToCore( vTaskNTPsunc, "NTPSunhronize", STACK_SIZE, &ucParameterToPass, tskIDLE_PRIORITY, &xHandle, 0 );
     //xTaskCreatePinnedToCore( vTaskNTPsunc, "NTPSunhronize", STACK_SIZE, &ucParameterToPass, 5, &xHandle, 0 );
     //configASSERT( xHandle );
-  Wire.begin();
-  delay(15);
-  Serial.println(HDC1080.begin());
-  HDC1080.getSN(sn);
-  HDC1080.triggerRead();
-  periodicTicker.attach_ms(5000, hdc1080_read_to_send_HMI);
-  EEPROM.begin(EEPROM_SIZE);
+    Wire.begin();
+    delay(15);
+    Serial.println(HDC1080.begin());
+    HDC1080.getSN(sn);
+    HDC1080.triggerRead();
+    periodicTicker.attach_ms(5000, hdc1080_read_to_send_HMI);
+    EEPROM.begin(EEPROM_SIZE);
   
     sendInt(Serial2,"va10.val",0);
     sendString(Serial2,"wifiConnect.txt", "wifi not connected");sendInt(Serial2,"va10.val",0);sendInt(Serial2,"tm2.en",1);
@@ -324,7 +331,7 @@ void loop() {
         attachInterrupt(RF_PIN, handler, CHANGE);// re-enable interrupt
     }
     delay(10);
-
+//rfPlotter();
 //////////////////////////////////////////////////////////////////////////////////////////////
 if (received == true) {
     // disable interrupt to avoid new data corrupting the buffer
