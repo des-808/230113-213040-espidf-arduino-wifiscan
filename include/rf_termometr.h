@@ -20,7 +20,7 @@ const unsigned int BIT0_LENGTH1 = 1470;
 
 
 
-bool isSync(unsigned int idx);
+bool isSync(unsigned int idx); 
 void handler();
 bool printSerialToRfData(unsigned int syncIndex1, unsigned int syncIndex2,int * buffer,const int count );
 void rfPlotter();
