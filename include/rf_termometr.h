@@ -9,7 +9,7 @@
 #define BIT1_LENGTH  2430// 2.43 ms
 #define BIT0_LENGTH  1470 // 1.47 ms
 
-#define RF_PIN  15 // D15 is interrupt 1
+#define RF_PIN  27 // D27 is interrupt 1
 #define BIT_FRAME_SAMPLE 36 //36 бит в посылке
 
 unsigned long timings[RING_BUFFER_SIZE];

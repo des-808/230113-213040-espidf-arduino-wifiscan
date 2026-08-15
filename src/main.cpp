@@ -99,7 +99,7 @@ int stat = ntp.status();
 }
 int ntp_status_int(){
 int stat = ntp.status();
-   switch(stat){     ;
+   switch(stat){
        case 0:  sendString(Serial2,"t15.txt" ,"всё ок");                               break;
        case 1:  sendString(Serial2,"t15.txt" ,"не запущен UDP");                       break;
        case 2:  sendString(Serial2,"t15.txt" ,"не подключен WiFi");                    break;
@@ -259,10 +259,10 @@ void eeprom_read(){ }
 
 void send_termo_out_to_hmi(String byte_arr,String batery,int ch,int temp,int humiditu){
         sendString(Serial2,"t14.txt",byte_arr);
-        sendString(Serial2,"t15,txt",batery);
+        sendString(Serial2,"t15.txt",batery);
         sendInt(Serial2,"n6.val",ch+1);
         sendInt(Serial2,"x1.val",temp);
-        sendInt(Serial2,"n4.val",humidity);
+        sendInt(Serial2,"n4.val", humiditu);
 }
 
 void setup() {
@@ -332,6 +332,7 @@ if (received == true) {
     // loop over buffer data
     is_rf_post = printSerialToRfData(syncIndex1,syncIndex2,bufer,count);
     if(is_rf_post){
+        received = false;
         is_rf_post=false;
         #ifdef DEBUG_SERIAL_STRING_ARR_BUFER
         for( int i = 0;i<counts;i++){Serial.print(bufer[i]); }Serial.println("");
