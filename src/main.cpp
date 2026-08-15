@@ -331,9 +331,10 @@ void loop() {
         attachInterrupt(RF_PIN, handler, CHANGE);// re-enable interrupt
     }
     delay(10);
-//rfPlotter(); 
+ 
 //////////////////////////////////////////////////////////////////////////////////////////////
 if (received == true) {
+    //rfPlotter();
     // disable interrupt to avoid new data corrupting the buffer
     detachInterrupt(RF_PIN);
     // loop over buffer data
