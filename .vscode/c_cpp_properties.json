@@ -10,6 +10,8 @@
             "includePath": [
                 "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/include",
                 "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/src",
+                "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
+                "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/EEPROM/src",
@@ -220,7 +222,6 @@
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FFat/src",
-                "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdate/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdateServer/src",
@@ -237,7 +238,6 @@
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/SimpleBLE/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
-                "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                 ""
@@ -247,6 +247,8 @@
                 "path": [
                     "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/include",
                     "c:/Users/des808/Documents/PlatformIO/Projects/230109-224024-espidf-arduino-wifiscan/src",
+                    "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
+                    "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Ticker/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/EEPROM/src",
@@ -457,7 +459,6 @@
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/ESPmDNS/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Ethernet/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FFat/src",
-                    "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPClient/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdate/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/HTTPUpdateServer/src",
@@ -474,7 +475,6 @@
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/SimpleBLE/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/USB/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/Update/src",
-                    "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WebServer/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/des808/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
                     ""
@@ -497,13 +497,14 @@
                 "ARDUINO=10812",
                 "ARDUINO_VARIANT=\"doitESP32devkitV1\"",
                 "ARDUINO_BOARD=\"DOIT ESP32 DEVKIT V1\"",
-                "ARDUINO_PARTITION_default",
+                "ARDUINO_PARTITION_huge_app",
                 ""
             ],
             "cStandard": "gnu99",
             "cppStandard": "gnu++11",
             "compilerPath": "C:/Users/des808/.platformio/packages/toolchain-xtensa-esp32/bin/xtensa-esp32-elf-gcc.exe",
             "compilerArgs": [
+                "-mfix-esp32-psram-cache-issue",
                 "-mlongcalls",
                 ""
             ]

@@ -8,7 +8,7 @@
 #include "ntp.h"
 #include "esp_timer.h"
 #include <Ticker.h> 
-//#include <WiFi.h>
+#include <WiFi.h>
 ////////////////////
 //#include "esp_netif_sntp.h"
 //#include "lwip/ip_addr.h" 
@@ -17,6 +17,8 @@
 #include "EEPROM.h"
 #include <stdint.h>
 #include "WiFiScan.h"
+#include "wifi_manager.h"
+#include "web_server.h"
 //#define DEBUG
 //#define DEBUG_hdc1080
 //#define DEBUG_SERIAL_STRING_ARR_BUFER
@@ -46,13 +48,16 @@ void hdc1080_read_to_send_HMI();
 void send_termo_out_to_hmi(String byte_arr,String batery,int ch,int temp,int humiditu);
 void restart_attachInterrupt();
 
-//extern unsigned long timings[RING_BUFFER_SIZE];
+extern unsigned long timings[RING_BUFFER_SIZE];
 extern unsigned int syncIndex1;  // индекс первого синхросигнала
 extern unsigned int syncIndex2;  // индекс второго синхросигнала
 extern bool received;
 extern int counts;
 extern bool is_rf_post;
 extern int bufer[];
+// RF debug variables
+extern volatile int sync_detected_count;
+extern volatile int received_count;
 
 bool ssid_ok=false;
 bool password_ok=false;
@@ -90,6 +95,9 @@ struct myStructAutoWiFi {
 } tmpStruct;
 
 myStructAutoWiFi wifi_struct;
+
+// WiFi Manager
+WifiManager wifiManager;
 
 void ntp_status_serial(HardwareSerial Serial){
 int stat = ntp.status();
@@ -144,7 +152,7 @@ void wifiScan() {
 }
 //void UART_RX_IRQ(){Serial.print("irq");}
 void wifi_auto_connect(){
-
+    wifiManager.autoConnect();
 }
 void serialEventRun () {
   if (Serial2.available ()) {
@@ -204,7 +212,7 @@ void read_buf_serial_hmi(){
 void vTaskNTPsunc( void * pvParameters )
 {
     while(true){
-        if(WiFi.status() == WL_CONNECTED) { 
+        if(wifiManager.isStationConnected()) { 
             ntp.updateNow();   
             //Serial.println();
             ntp_status();
@@ -272,75 +280,155 @@ void send_termo_out_to_hmi(String byte_arr,String batery,int ch,int temp,int hum
         sendInt(Serial2,"n4.val", humiditu);
 }
 
+// Глобальный буфер для времени
+static char g_timeBuf[20];
+
+// Callback для получения текущего времени (для веб-сервера)
+const char* getTimeString() {
+  String timeStr = ntp.timeString();
+  String dateStr = ntp.dateString();
+  snprintf(g_timeBuf, sizeof(g_timeBuf), "%s %s", timeStr.c_str(), dateStr.c_str());
+  return g_timeBuf;
+}
+
 void setup() {
-    // Set WiFi to station mode and disconnect from an AP if it was previously connected
-    WiFi.mode(WIFI_STA);
-    WiFi.disconnect();
     Serial.begin(115200);
     Serial2.begin(115200);
     pinMode(RF_PIN, INPUT);
     attachInterrupt(RF_PIN, handler, CHANGE);
 
-    //ntp.begin();
-    //ntp.setPeriod(60);
-    //static uint8_t ucParameterToPass;
-    //TaskHandle_t xHandle = NULL;
-    //xTaskCreatePinnedToCore( vTaskNTPsunc, "NTPSunhronize", STACK_SIZE, &ucParameterToPass, tskIDLE_PRIORITY, &xHandle, 0 );
-    //xTaskCreatePinnedToCore( vTaskNTPsunc, "NTPSunhronize", STACK_SIZE, &ucParameterToPass, 5, &xHandle, 0 );
-    //configASSERT( xHandle );
+    // Инициализация EEPROM
+    EEPROM.begin(EEPROM_SIZE);
+  
+    // Инициализация WiFi менеджера
+    Serial.println("\n========================================");
+    Serial.println("  ESP32 Thermo - Starting...");
+    Serial.println("========================================");
+    
+    wifiManager.begin();
+    
+    // Автоподключение: saved WiFi или SoftAP
+    wifiManager.autoConnect();
+    
+    Serial.println("\nWiFi Status:");
+    Serial.print("  Mode: ");
+    Serial.println(wifiManager.getMode() == WIFI_MODE_SOFTAP ? "SoftAP" : "Station");
+    Serial.print("  IP: ");
+    Serial.println(wifiManager.getIP());
+    
+    // Запуск веб-сервера (один раз)
+    if (!webServerIsStarted()) {
+        webServerStart(&wifiManager);
+        // Регистрируем callback для NTP времени
+        webServerSetTimeCallback(getTimeString);
+        delay(500);
+    }
+    
+    sendInt(Serial2,"va10.val",0);
+    sendString(Serial2,"wifiConnect.txt", "wifi not connected");sendInt(Serial2,"va10.val",0);sendInt(Serial2,"tm2.en",1);
+    
+    // HDC1080
     Wire.begin();
     delay(15);
     Serial.println(HDC1080.begin());
     HDC1080.getSN(sn);
     HDC1080.triggerRead();
     periodicTicker.attach_ms(5000, hdc1080_read_to_send_HMI);
-    EEPROM.begin(EEPROM_SIZE);
-  
-    sendInt(Serial2,"va10.val",0);
-    sendString(Serial2,"wifiConnect.txt", "wifi not connected");sendInt(Serial2,"va10.val",0);sendInt(Serial2,"tm2.en",1);
 }
 
 
+// Периодическое сохранение WiFi сетей при стабильном подключении
+static unsigned long lastWifiSave = 0;
+#define WIFI_SAVE_INTERVAL 30000 // Сохраняем каждые 30 секунд при стабильном подключении
+
 void loop() {
-//char xz[] = getFirst( wifi_struct);
+    // Обрабатываем веб-сервер (каждый итератор)
+    //webServerHandleClient();
+    
+    // Периодическое сохранение WiFi при стабильном подключении
+    // if (wifiManager.isStationConnected() && (millis() - lastWifiSave > WIFI_SAVE_INTERVAL)) {
+    //     lastWifiSave = millis();
+    //     // Просто перечитываем и перезаписываем - гарантируем что данные на месте
+    //     wifiManager.saveToEEPROM();
+    //     Serial.println("[MAIN] Periodic WiFi save completed");
+    // }
+    
+    // Дополнительная отладка — периодически проверяем статус
+    /* static unsigned long lastDebug = 0;
+    if (millis() - lastDebug > 10000) {
+        lastDebug = millis();
+        Serial.print("[DEBUG] WiFi Mode: ");
+        Serial.println(wifiManager.getMode() == WIFI_MODE_SOFTAP ? "SoftAP" : "Station");
+        Serial.print("[DEBUG] SoftAP IP: ");
+        Serial.println(WiFi.softAPIP().toString().c_str());
+        Serial.print("[DEBUG] Station IP: ");
+        Serial.println(WiFi.localIP().toString().c_str());
+        Serial.print("[DEBUG] AP Clients: ");
+        Serial.println(WiFi.softAPgetStationNum());
+        Serial.print("[DEBUG] Saved networks: ");
+        Serial.println(wifiManager.getSavedNetworkCount());
+        Serial.print("[DEBUG] RF sync_count: ");
+        Serial.println(sync_detected_count);
+        Serial.print("[DEBUG] RF received: ");
+        Serial.println(received);
+        Serial.print("[DEBUG] RF counts: ");
+        Serial.println(counts);
+        Serial.print("[DEBUG] buffer[0-7]: ");
+        for(int i=0;i<8;i++) Serial.print(bufer[i]);
+        Serial.println();
+    } */
+    
     if(boolean_xz==true){boolean_xz=false; wifiScan();}
     if(read_buf_serial_hmi_bool){read_buf_serial_hmi();read_buf_serial_hmi_bool = false;}
+    
+    // Подключение через HMI - единый метод через WiFi Manager
     if(ssid_ok&&password_ok){
         detachInterrupt(RF_PIN);
         ssid_ok=false;
         password_ok=false;
-        WiFi.begin((const char*) ssid.c_str(), (const char*) password.c_str());
-        int counter =0;
-        while (WiFi.status() != WL_CONNECTED) {
-            delay(500);
-            counter++;
-            if(counter==20){WiFi.disconnect();break;}
-            sendString(Serial2,"wifiConnect.txt","Connecting to WiFi..");
-            Serial.println("Connecting to WiFi..");
+        
+        // Сохраняем и автоматически переподключаемся
+        Serial.printf("[MAIN] Saving and connecting to: %s\n", ssid.c_str());
+        sendString(Serial2,"wifiConnect.txt","Connecting to WiFi..");
+        
+        bool connected = wifiManager.saveNetwork(ssid.c_str(), 
+                           password.length() > 0 ? password.c_str() : nullptr, true);
+        
+        if (connected) {
+            Serial.print("[MAIN] Connected! IP: ");
+            Serial.println(WiFi.localIP());
+            sendString(Serial2,"wifiConnect.txt","connect to "+ssid);
+            sendInt(Serial2,"va10.val",1);
+        } else {
+            // Если не удалось подключиться к новой сети - пробуем к другим сохранённым
+            Serial.println("[MAIN] New network failed, trying other saved networks...");
+            connected = wifiManager.switchToStation();
+            if (connected) {
+                Serial.print("[MAIN] Connected to another network! IP: ");
+                Serial.println(WiFi.localIP());
+                sendString(Serial2,"wifiConnect.txt","connect to "+WiFi.SSID());
+                sendInt(Serial2,"va10.val",1);
+            } else {
+                Serial.println("[MAIN] All connection attempts failed, switching to SoftAP");
+                wifiManager.switchToSoftAP();
+                sendString(Serial2,"wifiConnect.txt","connect failed - AP mode");
+                sendInt(Serial2,"va10.val",0);
+            }
         }
-        Serial.println(WiFi.broadcastIP());
-        //Serial.println(WiFi.channel());
-        //Serial.println(WiFi.SSID());
-        //Serial.println(WiFi.dnsIP());
-        //Serial.println(WiFi.encryptionType(intssid));
-        //Serial.println(WiFi.macAddress());
-        //Serial.write((const char*) password.c_str());
-        sendString(Serial2,"wifiConnect.txt","connect to "+ssid);sendInt(Serial2,"tm2.en",1);
-        sendInt(Serial2,"va10.val",1);
-        //Serial.write((const char*) ssid.c_str());
+        sendInt(Serial2,"tm2.en",1);
         attachInterrupt(RF_PIN, handler, CHANGE);// re-enable interrupt
     }
     delay(10);
  
 //////////////////////////////////////////////////////////////////////////////////////////////
 if (received == true) {
+    received = false; // Сбрасываем сразу, чтобы не спамить на каждой итерации loop()
     //rfPlotter();
     // disable interrupt to avoid new data corrupting the buffer
     detachInterrupt(RF_PIN);
     // loop over buffer data
     is_rf_post = printSerialToRfData(syncIndex1,syncIndex2,bufer,count);
     if(is_rf_post){
-        received = false;
         is_rf_post=false;
         #ifdef DEBUG_SERIAL_STRING_ARR_BUFER
         for( int i = 0;i<counts;i++){Serial.print(bufer[i]); }Serial.println("");
@@ -374,4 +462,8 @@ void restart_attachInterrupt(){
     received = false;
     syncIndex1 = 0;
     syncIndex2 = 0;
+    // Очистка кольцевого буфера после успешного приёма посылки
+    for (int i = 0; i < RING_BUFFER_SIZE; i++) {
+        timings[i] = 0;
+    }
 }
